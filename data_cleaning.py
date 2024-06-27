@@ -3,15 +3,14 @@ class DataCleaning:
     def __init__(self) -> None:
         pass
 
-    def clean_user_data(self):
+    def clean_user_data(self, user_db):
         # You will need clean the user data, look out for NULL values, 
         # errors with dates, incorrectly typed values and rows filled 
         # with the wrong information.
-        from data_extraction import DataExtractor
         import numpy as np 
+        from datetime import datetime
 
-        extractor = DataExtractor()
-        data = extractor.read_rds_table() 
+        data = user_db
         data = data.replace('NULL', np.nan)
         data = data.dropna()
         name_cols = data.select_dtypes(object).columns
@@ -22,11 +21,24 @@ class DataCleaning:
         countries = ['United Kingdom', 'Germany', 'United States']
         data = data[data.country.isin(countries)]
 
-        for v in data.columns:
-             print(data[v].value_counts())
+        #for v in data.columns:
+        #     print(data[v].value_counts())
+        
+        ## Check for digits in first/last names
+        #for v in data['last_name']:
+        #    if any(char.isdigit() for char in v):
+        #        print(v)
+
+        #for v in data['phone_number']:
+        #    if any(char.isalpha() for char in v):
+        #        print(v)
+
         #print(data.head()) 
         #print(list(data.columns.values))
         #print(data.info())
+        
+        return data
 
-x = DataCleaning()
-print(x.clean_user_data())    
+
+if __name__ == '__main__':
+    pass

@@ -1,4 +1,4 @@
-from database_utils import DatabaseConnector
+import pandas as pd
 
 class DataExtractor:
     # This class will work as a utility class, in it you will be creating 
@@ -9,15 +9,14 @@ class DataExtractor:
     def __init__(self) -> None:
         pass
     
-    def read_rds_table(self):
-        import pandas as pd
+    def read_rds_table(self, engine, table_name):
         from sqlalchemy import text
-        db_init = DatabaseConnector()
-        db_engine = db_init.init_db_engine()
+        db_engine = engine
         with db_engine.connect() as connection:
-            result = connection.execute(text("SELECT * FROM legacy_users"))
+            result = connection.execute(text(f"SELECT * FROM {table_name}"))
             self.result = pd.DataFrame(result)
             return self.result
 
-x = DataExtractor()
-print(x.read_rds_table())
+
+if __name__ == '__main__':
+    pass

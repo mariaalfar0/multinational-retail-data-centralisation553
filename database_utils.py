@@ -6,35 +6,38 @@ class DatabaseConnector:
     def __init__(self):
         pass
 
-    def read_db_creds(self):
-        with open('db_creds.yaml') as f:
-            self.db_creds = yaml.load(f, Loader=yaml.SafeLoader)
-            return self.db_creds
+    def read_db_creds(self, yaml_file):
+        with open(yaml_file) as f:
+            db_creds = yaml.load(f, Loader=yaml.SafeLoader)
+            print(db_creds)
+            return db_creds
     
-    def init_db_engine(self):
+    def init_db_engine(self, creds):
         from sqlalchemy import create_engine
-        self.db_creds = self.read_db_creds()
         DATABASE_TYPE = 'postgresql'
         DBAPI = 'psycopg2'
-        HOST = self.db_creds['RDS_HOST']
-        USER = self.db_creds['RDS_USER']
-        PASSWORD = self.db_creds['RDS_PASSWORD']
-        DATABASE = self.db_creds['RDS_DATABASE']
-        PORT = self.db_creds['RDS_PORT']
+        HOST = creds['RDS_HOST']
+        USER = creds['RDS_USER']
+        PASSWORD = creds['RDS_PASSWORD']
+        DATABASE = creds['RDS_DATABASE']
+        PORT = creds['RDS_PORT']
         db_engine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}")
         return db_engine
     
-    def list_db_tables(self):
+    def list_db_tables(self, engine):
         from sqlalchemy import inspect
-        db_engine = self.init_db_engine()
-        inspector = inspect(db_engine)
+        inspector = inspect(engine)
         return inspector.get_table_names()
 
-    def upload_to_db(self):
-        import pandas as pd
-        #db_table.to_sql('dim_users', db_engine, if_exists='replace')
-        pass
+    def upload_to_db(self, df, table_name, engine):
+        # engine = self.init_db_engine(yaml_file)
+        df.to_sql(table_name, con = engine, if_exists='replace', index=False)
 
-x = DatabaseConnector()
-#x.list_db_tables()
-x.upload_to_db()
+if __name__ == '__main__':
+    x = DatabaseConnector()
+    y = x.read_db_creds('local_db_creds.yaml')
+    print(y)
+    print(type(y))
+    local_db_engine = x.init_db_engine(y)
+    print(local_db_engine)
+    pass
