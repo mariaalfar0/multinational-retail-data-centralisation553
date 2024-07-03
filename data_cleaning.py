@@ -1,3 +1,6 @@
+import numpy as np 
+from datetime import datetime
+
 class DataCleaning:
     # Methods to clean data from each of the data sources.
     def __init__(self) -> None:
@@ -7,19 +10,17 @@ class DataCleaning:
         # You will need clean the user data, look out for NULL values, 
         # errors with dates, incorrectly typed values and rows filled 
         # with the wrong information.
-        import numpy as np 
-        from datetime import datetime
 
-        data = user_db
-        data = data.replace('NULL', np.nan)
-        data = data.dropna()
-        name_cols = data.select_dtypes(object).columns
-        data[name_cols] = data[name_cols].apply(lambda x: x.str.strip())
-        data['country_code'] = data['country_code'].str.replace('GGB','GB')
+        user_data = user_db
+        user_data = user_data.replace('NULL', np.nan)
+        user_data = user_data.dropna()
+        name_cols = user_data.select_dtypes(object).columns
+        user_data[name_cols] = user_data[name_cols].apply(lambda x: x.str.strip())
+        user_data['country_code'] = user_data['country_code'].str.replace('GGB','GB')
         country_codes = ['GB', 'DE', 'US']
-        data = data[data.country_code.isin(country_codes)]
+        user_data = user_data[user_data.country_code.isin(country_codes)]
         countries = ['United Kingdom', 'Germany', 'United States']
-        data = data[data.country.isin(countries)]
+        user_data = user_data[user_data.country.isin(countries)]
 
         #for v in data.columns:
         #     print(data[v].value_counts())
@@ -37,7 +38,13 @@ class DataCleaning:
         #print(list(data.columns.values))
         #print(data.info())
         
-        return data
+        return user_data
+    
+    def clean_card_data(self, card_db):
+        card_data = card_db
+        card_data = card_data.replace('NULL', np.nan)
+        card_data = card_data.dropna()
+        return card_data
 
 
 if __name__ == '__main__':

@@ -9,7 +9,7 @@ class DatabaseConnector:
     def read_db_creds(self, yaml_file):
         with open(yaml_file) as f:
             db_creds = yaml.load(f, Loader=yaml.SafeLoader)
-            print(db_creds)
+            #print(db_creds)
             return db_creds
     
     def init_db_engine(self, creds):
@@ -27,6 +27,7 @@ class DatabaseConnector:
     def list_db_tables(self, engine):
         from sqlalchemy import inspect
         inspector = inspect(engine)
+        print(inspector.get_table_names())
         return inspector.get_table_names()
 
     def upload_to_db(self, df, table_name, engine):
