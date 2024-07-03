@@ -1,4 +1,5 @@
 import yaml
+from sqlalchemy import create_engine, inspect
 
 class DatabaseConnector:
     # Use to connect with and upload data to 
@@ -9,11 +10,9 @@ class DatabaseConnector:
     def read_db_creds(self, yaml_file):
         with open(yaml_file) as f:
             db_creds = yaml.load(f, Loader=yaml.SafeLoader)
-            print(db_creds)
             return db_creds
     
     def init_db_engine(self, creds):
-        from sqlalchemy import create_engine
         DATABASE_TYPE = 'postgresql'
         DBAPI = 'psycopg2'
         HOST = creds['RDS_HOST']
@@ -25,12 +24,10 @@ class DatabaseConnector:
         return db_engine
     
     def list_db_tables(self, engine):
-        from sqlalchemy import inspect
         inspector = inspect(engine)
         return inspector.get_table_names()
 
     def upload_to_db(self, df, table_name, engine):
-        # engine = self.init_db_engine(yaml_file)
         df.to_sql(table_name, con = engine, if_exists='replace', index=False)
 
 if __name__ == '__main__':
