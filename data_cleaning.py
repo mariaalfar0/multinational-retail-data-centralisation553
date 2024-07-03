@@ -1,4 +1,5 @@
 import numpy as np 
+import pandas as pd
 from datetime import datetime
 
 class DataCleaning:
@@ -6,45 +7,68 @@ class DataCleaning:
     def __init__(self) -> None:
         pass
 
-    def clean_user_data(self, user_db):
-        # You will need clean the user data, look out for NULL values, 
-        # errors with dates, incorrectly typed values and rows filled 
-        # with the wrong information.
-
-        user_data = user_db
-        user_data = user_data.replace('NULL', np.nan)
+    def clean_user_data(self, user_data):
+        # Get rid of duplicates
+        user_data = user_data.drop_duplicates()
+        # Drop null values 
+        user_data = user_data[user_data.first_name != 'NULL']    
         user_data = user_data.dropna()
+        # Strip spaces etc. from start of strings
         name_cols = user_data.select_dtypes(object).columns
         user_data[name_cols] = user_data[name_cols].apply(lambda x: x.str.strip())
+        # Fix typos in country codes and ensure that all data comes from GB, USA, DE
         user_data['country_code'] = user_data['country_code'].str.replace('GGB','GB')
         country_codes = ['GB', 'DE', 'US']
         user_data = user_data[user_data.country_code.isin(country_codes)]
         countries = ['United Kingdom', 'Germany', 'United States']
         user_data = user_data[user_data.country.isin(countries)]
-
-        #for v in data.columns:
-        #     print(data[v].value_counts())
-        
-        ## Check for digits in first/last names
-        #for v in data['last_name']:
-        #    if any(char.isdigit() for char in v):
-        #        print(v)
-
-        #for v in data['phone_number']:
-        #    if any(char.isalpha() for char in v):
-        #        print(v)
-
-        #print(data.head()) 
-        #print(list(data.columns.values))
-        #print(data.info())
-        
+        # Put dates into correct format
+        date_cols = ['date_of_birth','join_date']
+        for date_col in date_cols:
+            user_data.loc[:,date_col] = user_data.loc[:,date_col].apply(pd.to_datetime, errors='coerce')
+        # Remove escape characters
+        user_data.loc[:,'address'] = user_data.loc[:,'address'].apply(lambda x:x.replace('\n', ','))
         return user_data
     
-    def clean_card_data(self, card_db):
-        card_data = card_db
-        card_data = card_data.replace('NULL', np.nan)
+    def clean_card_data(self, card_data):
+        # Reset indexing
+        index = [row for row in range(0,len(card_data))] 
+        card_data['index'] = index
+        card_data = card_data.set_index(['index'])
+        # Get rid of duplicates
+        card_data = card_data.drop_duplicates()
+        # Drop NULL values
+        card_data = card_data[card_data.card_number != 'NULL']
         card_data = card_data.dropna()
+        # Infer datatypes
+        card_data['card_number'] = card_data['card_number'].astype('str')     
+        card_data['card_provider'] = card_data['card_provider'].astype('str')
+        # Drop wrong values
+        card_data.loc[:,'card_number'] = card_data.loc[:,'card_number'].astype('str').apply(lambda x:x.replace('?',''))
+        card_data = card_data[card_data['card_number'].str.isnumeric()]                                                                                       ###
+        # Fix date formatting
+        card_data.loc[:,'expiry_date'] = \
+        card_data.loc[:,'expiry_date'].apply(pd.to_datetime, format='%m/%y')
+        card_data.loc[:,'date_payment_confirmed'] = \
+        card_data.loc[:,'date_payment_confirmed'].apply(pd.to_datetime,errors='coerce')
         return card_data
+    
+    def clean_store_data(self, stores_data):
+        # Delete duplicate indexer column 
+        stores_data = stores_data.iloc[:,1:]
+        # Drop duplicates
+        stores_data = stores_data.drop_duplicates()
+        # Drop rows with wrong values
+        stores_data = stores_data.loc[stores_data['country_code'].isin(['GB','US','DE'])]
+        # Remove escape characters
+        stores_data.loc[:,'address'] =  stores_data.loc[:,'address'].astype('str').apply(lambda x:x.replace('\n', ','))
+        # Fix date formatting
+        stores_data[['opening_date']] = \
+        stores_data[['opening_date']].apply(pd.to_datetime,errors='coerce')
+        # Fix continent misspellings
+        stores_data['continent'] = stores_data['continent'].str.replace('eeEurope','Europe')
+        stores_data['continent'] = stores_data['continent'].str.replace('eeAmerica','America')
+        return stores_data 
 
 
 if __name__ == '__main__':
