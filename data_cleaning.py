@@ -1,3 +1,4 @@
+import re
 import numpy as np 
 import pandas as pd
 from datetime import datetime
@@ -69,6 +70,56 @@ class DataCleaning:
         stores_data['continent'] = stores_data['continent'].str.replace('eeEurope','Europe')
         stores_data['continent'] = stores_data['continent'].str.replace('eeAmerica','America')
         return stores_data 
+    
+    # Ensure correct format e.g. '0.77g.'
+    def correct_format(self, value):
+        if value[-1].isalnum() is False:
+            wrong_char = value[-1]
+            value= value.replace(wrong_char,'').strip()
+        return value
+    
+    # Convert oz to kg
+    def convert_oz(self,value):
+        if 'oz' in value:
+            value = value.replace('oz','')
+            value = float(value) * 28.3495
+        return value
+    
+    # Convert grams to kg
+    def convert_grams(self,value):
+        if value[-1] == 'g' and value[-2].isdigit() and value[:-2].isdigit()or value[-2:] == 'ml':
+            value = value.replace('g','').replace('ml','')
+            value = int(value)/1000
+        return value
+    
+    def convert_products_weight(self, products_data):
+        products_data.loc[:,'weight'] = products_data.loc[:,'weight'].astype('str').apply(lambda x:self.correct_format(x))
+        products_data.loc[:,'weight'] = products_data.loc[:,'weight'].astype('str').apply(lambda x:self.convert_oz(x))
+        products_data.loc[:,'weight'] = products_data.loc[:,'weight'].astype('str').apply(lambda x:self.convert_grams(x))
+        # remove kg sign
+        products_data.loc[:,'weight'] = products_data.loc[:,'weight'].astype('str').apply(lambda x:re.sub('[kg]','',x)) 
+        # drop non numerical values with weight is digit
+        products_data.loc[:,'weight'] = products_data[products_data.loc[:,'weight'].astype('str').apply(lambda x:x.replace('.','').isdigit())] 
+        # convert all weight values to float and round up 2.d.p
+        products_data.loc[:,'weight'] = products_data.loc[:,'weight'].astype('float').apply(lambda x: round(x,2))
+        return products_data
+
+    def clean_products_data(self, products_data):
+        # Delete duplicate indexer column 
+        products_data = products_data.iloc[:,1:]
+        # Reset indexing
+        index = [row for row in range(0,len(products_data))] 
+        products_data['index'] = index
+        products_data = products_data.set_index(['index'])
+        # Drop NaN values
+        products_data = products_data[products_data.weight != 'NULL']
+        products_data = products_data.dropna()
+        # Drop duplicates
+        products_data = products_data.drop_duplicates()
+        # Format dates
+        products_data.loc[:,'date_added'] = (
+        products_data['date_added'].apply(pd.to_datetime, errors='coerce'))
+        return products_data
 
 
 if __name__ == '__main__':
