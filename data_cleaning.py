@@ -20,7 +20,8 @@ class DataCleaning:
         # Get rid of duplicates
         user_data = user_data.drop_duplicates()
         # Drop null values 
-        user_data = user_data[user_data.first_name != 'NULL']    
+        #user_data = user_data[user_data.first_name != 'NULL']
+        user_data.replace({'NULL': np.nan})    
         user_data = user_data.dropna()
         # Strip spaces etc. from start of strings
         name_cols = user_data.select_dtypes(object).columns
@@ -47,8 +48,9 @@ class DataCleaning:
         # Get rid of duplicates
         card_data = card_data.drop_duplicates()
         # Drop NULL values
-        card_data = card_data[card_data.card_number != 'NULL']
-        card_data = card_data.dropna()
+        #card_data = card_data.fillna()
+        card_data.replace({'NULL': np.nan})    
+        card_data = card_data.dropna(thresh=2)
         # Infer datatypes
         card_data['card_number'] = card_data['card_number'].astype('str')     
         card_data['card_provider'] = card_data['card_provider'].astype('str')
@@ -65,6 +67,10 @@ class DataCleaning:
     def clean_store_data(self, stores_data):
         # Delete duplicate indexer column 
         stores_data = stores_data.iloc[:,1:]
+        # Drop NULL values
+        #stores_data = stores_data.fillna()
+        stores_data.replace({'NULL': np.nan})    
+        stores_data = stores_data.dropna(thresh=2)
         # Drop duplicates
         stores_data = stores_data.drop_duplicates()
         # Drop rows with wrong values
@@ -120,9 +126,9 @@ class DataCleaning:
         products_data['index'] = index
         products_data = products_data.set_index(['index'])
         # Drop NaN values
-        print(products_data.weight)
-        products_data = products_data[products_data.weight != 'NULL']
-        products_data = products_data.dropna()
+        #products_data = products_data.fillna()
+        products_data.replace({'NULL': np.nan})    
+        products_data = products_data.dropna(thresh=2)
         # Drop duplicates
         products_data = products_data.drop_duplicates()
         # Format dates
@@ -130,11 +136,14 @@ class DataCleaning:
         products_data['date_added'].apply(pd.to_datetime, errors='coerce'))
         # Check UUID validity
         for val in products_data['uuid']:
-            products_data['uuid_valid'] = self.is_valid_uuid(val)
+           products_data['uuid_valid'] = self.is_valid_uuid(val)
         products_data = products_data[products_data.uuid_valid == True]
         return products_data
     
     def clean_date_data(self, date_data):         
+        #Drop null values
+        date_data.replace({'NULL': np.nan})    
+        date_data = date_data.dropna(thresh=2)
         #Check UUID validity
         for val in date_data['date_uuid']:
             date_data['uuid_valid'] = self.is_valid_uuid(val)
@@ -142,7 +151,7 @@ class DataCleaning:
         #Format time correctly
         date_data['date_string'] = date_data['day'] + '/' + date_data['month'] + '/' + date_data['year'] + ' ' + date_data['timestamp']
         date_data.loc[:,'date_string'] = \
-        date_data.loc[:,'date_string'].apply(pd.to_datetime,errors='coerce')
+        date_data.loc[:,'date_string'].apply(pd.to_datetime,dayfirst=True, errors='coerce')
         return date_data
 
 if __name__ == '__main__':
