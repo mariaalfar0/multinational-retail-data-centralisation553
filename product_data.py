@@ -15,5 +15,7 @@ product_data = pd.read_csv('products.csv')
 converted_product_data = data_cleaner.convert_products_weight(product_data)
 clean_product_data = data_cleaner.clean_products_data(converted_product_data)
 
+print(clean_product_data.uuid_valid)
+print(clean_product_data.info())
 
 

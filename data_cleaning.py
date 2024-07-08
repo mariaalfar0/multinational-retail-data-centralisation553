@@ -2,11 +2,19 @@ import re
 import numpy as np 
 import pandas as pd
 from datetime import datetime
+import uuid 
 
 class DataCleaning:
     # Methods to clean data from each of the data sources.
     def __init__(self) -> None:
         pass
+
+    def is_valid_uuid(self, val):
+        try:
+            uuid.UUID(str(val))
+            return True
+        except ValueError:
+            return False
 
     def clean_user_data(self, user_data):
         # Get rid of duplicates
@@ -112,6 +120,7 @@ class DataCleaning:
         products_data['index'] = index
         products_data = products_data.set_index(['index'])
         # Drop NaN values
+        print(products_data.weight)
         products_data = products_data[products_data.weight != 'NULL']
         products_data = products_data.dropna()
         # Drop duplicates
@@ -119,8 +128,22 @@ class DataCleaning:
         # Format dates
         products_data.loc[:,'date_added'] = (
         products_data['date_added'].apply(pd.to_datetime, errors='coerce'))
+        # Check UUID validity
+        for val in products_data['uuid']:
+            products_data['uuid_valid'] = self.is_valid_uuid(val)
+        products_data = products_data[products_data.uuid_valid == True]
         return products_data
-
+    
+    def clean_date_data(self, date_data):         
+        #Check UUID validity
+        for val in date_data['date_uuid']:
+            date_data['uuid_valid'] = self.is_valid_uuid(val)
+        date_data = date_data[date_data.uuid_valid == True]
+        #Format time correctly
+        date_data['date_string'] = date_data['day'] + '/' + date_data['month'] + '/' + date_data['year'] + ' ' + date_data['timestamp']
+        date_data.loc[:,'date_string'] = \
+        date_data.loc[:,'date_string'].apply(pd.to_datetime,errors='coerce')
+        return date_data
 
 if __name__ == '__main__':
     pass
