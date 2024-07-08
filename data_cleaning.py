@@ -20,12 +20,16 @@ class DataCleaning:
         # Get rid of duplicates
         user_data = user_data.drop_duplicates()
         # Drop null values 
-        #user_data = user_data[user_data.first_name != 'NULL']
         user_data.replace({'NULL': np.nan})    
         user_data = user_data.dropna()
         # Strip spaces etc. from start of strings
         name_cols = user_data.select_dtypes(object).columns
         user_data[name_cols] = user_data[name_cols].apply(lambda x: x.str.strip())
+        # Check UUID validity
+        for val in user_data['user_uuid']:
+            user_data['uuid_valid'] = self.is_valid_uuid(val)
+        user_data = user_data[user_data.uuid_valid == True]
+        user_data = user_data.drop('uuid_valid')
         # Fix typos in country codes and ensure that all data comes from GB, USA, DE
         user_data['country_code'] = user_data['country_code'].str.replace('GGB','GB')
         country_codes = ['GB', 'DE', 'US']
@@ -138,6 +142,7 @@ class DataCleaning:
         for val in products_data['uuid']:
            products_data['uuid_valid'] = self.is_valid_uuid(val)
         products_data = products_data[products_data.uuid_valid == True]
+        products_data = products_data.drop('uuid_valid')
         return products_data
     
     def clean_date_data(self, date_data):         
@@ -148,10 +153,11 @@ class DataCleaning:
         for val in date_data['date_uuid']:
             date_data['uuid_valid'] = self.is_valid_uuid(val)
         date_data = date_data[date_data.uuid_valid == True]
+        date_data = date_data.drop('uuid_valid')
         #Format time correctly
         date_data['date_string'] = date_data['day'] + '/' + date_data['month'] + '/' + date_data['year'] + ' ' + date_data['timestamp']
         date_data.loc[:,'date_string'] = \
-        date_data.loc[:,'date_string'].apply(pd.to_datetime,dayfirst=True, errors='coerce')
+        date_data.loc[:,'date_string'].apply(pd.to_datetime,dayfirst=True,errors='coerce')
         return date_data
 
 if __name__ == '__main__':

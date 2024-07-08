@@ -44,6 +44,6 @@ db_connector.upload_to_db(clean_product_data, 'dim_product_details', local_engin
 data_extractor.extract_from_s3('data-handling-public','date_details.json','/Users/malfa/Documents/multinational_retail_data/date_details.json')
 date_data = pd.read_json('date_details.json')
 clean_date_data = data_cleaner.clean_date_data(date_data)
-db_connector.upload_to_db(clean_date_data, 'dim_data_details', local_engine)
+db_connector.upload_to_db(clean_date_data, 'dim_date_details', local_engine)
 
 
