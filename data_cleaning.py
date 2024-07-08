@@ -29,7 +29,7 @@ class DataCleaning:
         for val in user_data['user_uuid']:
             user_data['uuid_valid'] = self.is_valid_uuid(val)
         user_data = user_data[user_data.uuid_valid == True]
-        user_data = user_data.drop('uuid_valid')
+        user_data = user_data.drop('uuid_valid', axis = 1)
         # Fix typos in country codes and ensure that all data comes from GB, USA, DE
         user_data['country_code'] = user_data['country_code'].str.replace('GGB','GB')
         country_codes = ['GB', 'DE', 'US']
@@ -118,7 +118,7 @@ class DataCleaning:
         products_data.loc[:,'weight'] = products_data.loc[:,'weight'].astype('str').apply(lambda x:re.sub('[kg]','',x)) 
         # drop non numerical values with weight is digit
         products_data.loc[:,'weight'] = products_data[products_data.loc[:,'weight'].astype('str').apply(lambda x:x.replace('.','').isdigit())] 
-        # convert all weight values to float and round up 2.d.p
+        # convert all weight values to float and roundto 2.d.p
         products_data.loc[:,'weight'] = products_data.loc[:,'weight'].astype('float').apply(lambda x: round(x,2))
         return products_data
 
@@ -142,7 +142,7 @@ class DataCleaning:
         for val in products_data['uuid']:
            products_data['uuid_valid'] = self.is_valid_uuid(val)
         products_data = products_data[products_data.uuid_valid == True]
-        products_data = products_data.drop('uuid_valid')
+        products_data = products_data.drop('uuid_valid', axis = 1)
         return products_data
     
     def clean_date_data(self, date_data):         
@@ -153,7 +153,7 @@ class DataCleaning:
         for val in date_data['date_uuid']:
             date_data['uuid_valid'] = self.is_valid_uuid(val)
         date_data = date_data[date_data.uuid_valid == True]
-        date_data = date_data.drop('uuid_valid')
+        date_data = date_data.drop('uuid_valid', axis = 1)
         #Format time correctly
         date_data['date_string'] = date_data['day'] + '/' + date_data['month'] + '/' + date_data['year'] + ' ' + date_data['timestamp']
         date_data.loc[:,'date_string'] = \
