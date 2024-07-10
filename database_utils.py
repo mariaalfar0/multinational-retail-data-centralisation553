@@ -1,5 +1,5 @@
 import yaml
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine
 
 class DatabaseConnector:
     # Use to connect with and upload data to 
@@ -22,10 +22,6 @@ class DatabaseConnector:
         PORT = creds['RDS_PORT']
         db_engine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}")
         return db_engine
-    
-    def list_db_tables(self, engine):
-        inspector = inspect(engine)
-        return inspector.get_table_names()
 
     def upload_to_db(self, df, table_name, engine):
         df.to_sql(table_name, con = engine, if_exists='replace', index=False)

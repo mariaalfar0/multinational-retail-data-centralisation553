@@ -1,6 +1,6 @@
 import pandas as pd
 import requests
-from sqlalchemy import text
+from sqlalchemy import text, inspect
 from tabula.io import read_pdf
 import boto3
 
@@ -9,6 +9,10 @@ class DataExtractor:
     def __init__(self) -> None:
         pass
     
+    def list_db_tables(self, engine):
+        inspector = inspect(engine)
+        return inspector.get_table_names()
+
     def read_rds_table(self, engine, table_name):
         db_engine = engine
         with db_engine.connect() as connection:
