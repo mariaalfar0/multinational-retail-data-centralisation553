@@ -24,7 +24,16 @@ Run 'main.py' using:
 python main.py
 
 File structure of the project:
-hangman523 ┣ milestone_2.py ┣ milestone_3.py ┣ milestone_4.py ┣ milestone_5.py ┗ README.md
+ ┣ database_utils.py
+ ┣ data_cleaning.py
+ ┣ data_extraction.py
+ ┣ data_queries.sql
+ ┣ date_details.json
+ ┣ db_creds.yaml
+ ┣ local_db_creds.yaml
+ ┣ main.py
+ ┣ products.csv
+ ┗ README.md
 
 License information:
 N/A
